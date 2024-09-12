@@ -1,0 +1,50 @@
+const apiKey = 'e55de9e85c4743625bfc80aee5b0fd60';
+
+document.getElementById('fetchWeatherBtn').addEventListener('click', () => {
+    const location = document.getElementById('locationInput').value;
+    if (location) {
+        fetchWeather(location);
+    }
+});
+
+document.getElementById('getCurrentLocationBtn').addEventListener('click', () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const { latitude, longitude } = position.coords;
+            fetchWeatherByCoordinates(latitude, longitude);
+        }, () => {
+            alert('Unable to retrieve your location');
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+});
+
+function fetchWeather(location) {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric`)
+        .then(response => response.json())
+        .then(data => displayWeather(data))
+        .catch(error => alert('Error fetching weather data: ' + error));
+}
+
+function fetchWeatherByCoordinates(lat, lon) {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+        .then(response => response.json())
+        .then(data => displayWeather(data))
+        .catch(error => alert('Error fetching weather data: ' + error));
+}
+
+function displayWeather(data) {
+    const weatherData = document.getElementById('weatherData');
+    if (data.cod === 200) {
+        weatherData.innerHTML = `
+            <p><strong>Location:</strong> ${data.name}</p>
+            <p><strong>Temperature:</strong> ${data.main.temp} °C</p>
+            <p><strong>Weather:</strong> ${data.weather[0].description}</p>
+            <p><strong>Humidity:</strong> ${data.main.humidity} %</p>
+            <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+        `;
+    } else {
+        weatherData.innerHTML = '<p>Error retrieving weather data.</p>';
+    }
+}
